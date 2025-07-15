@@ -1,1 +1,59 @@
 @import "tailwindcss";
+
+/* Rainbow background animation */
+@keyframes rainbow {
+    0% {
+        background-color: #ff0000;
+    }
+
+    /* Red */
+    14.28% {
+        background-color: #ff8000;
+    }
+
+    /* Orange */
+    28.57% {
+        background-color: #ffff00;
+    }
+
+    /* Yellow */
+    42.86% {
+        background-color: #00ff00;
+    }
+
+    /* Green */
+    57.14% {
+        background-color: #0080ff;
+    }
+
+    /* Blue */
+    71.43% {
+        background-color: #8000ff;
+    }
+
+    /* Indigo */
+    85.71% {
+        background-color: #ff0080;
+    }
+
+    /* Violet */
+    100% {
+        background-color: #ff0000;
+    }
+}
+
+.rainbow-bg {
+    animation: rainbow 30s linear infinite;
+    min-height: 100vh;
+}
+
+/* Glass-morphism container */
+.glass-container {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 50px;
+    padding: 1.25rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
