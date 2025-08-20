@@ -47,22 +47,33 @@
     min-height: 100vh;
 }
 
-/* Glass-morphism container */
-.glass-container {
-    background: rgba(255, 255, 255, 0.15);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 50px;
-    padding: 1.25rem;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-    position: relative;
-    z-index: 20;
-}
-
 /* Floating squares animation optimizations */
 .floating-square {
     will-change: transform, top;
     backface-visibility: hidden;
     transform-style: preserve-3d;
+}
+
+/* Liquid stack: force children to overlap and be absolutely centered */
+.liquid-stack {
+    position: relative;
+    display: inline-block;
+}
+
+.liquid-stack>* {
+    position: absolute !important;
+    top: 50% !important;
+    left: 50% !important;
+}
+
+.liquid-stack .glass {
+    position: relative !important;
+    z-index: 2 !important;
+}
+
+.liquid-stack svg,
+.liquid-stack .glass__warp,
+.liquid-stack .glass,
+.liquid-stack .transition-all {
+    pointer-events: all;
 }

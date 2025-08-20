@@ -6,6 +6,14 @@ export default function FloatingShapes() {
     const [shapes, setShapes] = useState([]);
     const [lastAspectRatio, setLastAspectRatio] = useState(null);
 
+    let _uidCounter = 1;
+    const uid = () => {
+        if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+            return crypto.randomUUID();
+        }
+        return `lg-${Date.now()}-${Math.random().toString(36).slice(2)}-${_uidCounter++}`;
+    };
+
     useEffect(() => {
         // Pre-populate screen with shapes to avoid empty start
         const prePopulateShapes = () => {
@@ -22,7 +30,7 @@ export default function FloatingShapes() {
                 const shapeType = shapeTypes[Math.floor(Math.random() * shapeTypes.length)];
 
                 const initialShape = {
-                    id: Date.now() + Math.random() + i,
+                    id: uid(),
                     type: shapeType,
                     x: Math.random() * screenWidth, // Allow shapes to spawn across full width, even if partially off-screen
                     y: Math.random() * (screenHeight + 6 * vmax) - 3 * vmax,
@@ -75,7 +83,7 @@ export default function FloatingShapes() {
                         const shapeType = shapeTypes[Math.floor(Math.random() * shapeTypes.length)];
 
                         const newShape = {
-                            id: Date.now() + Math.random() + adjustedShapes.length,
+                            id: uid(),
                             type: shapeType,
                             x: Math.random() * screenWidth, // Allow shapes to spawn across full width
                             y: Math.random() * (screenHeight + 6 * vmax) - 3 * vmax,
@@ -115,7 +123,7 @@ export default function FloatingShapes() {
             const xPosition = Math.random() * screenWidth;
 
             const newShape = {
-                id: Date.now() + Math.random(),
+                id: uid(),
                 type: shapeType,
                 x: xPosition,
                 y: screenHeight + shapeSize, // Start below screen
@@ -305,7 +313,7 @@ export default function FloatingShapes() {
     };
 
     return (
-        <div className="fixed inset-0 pointer-events-none overflow-hidden z-10">
+        <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
             {shapes.map(shape => (
                 <div
                     key={shape.id}
