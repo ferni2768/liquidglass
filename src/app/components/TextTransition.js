@@ -7,6 +7,7 @@ export default function TextTransition() {
     const TEXTS = useMemo(() => [
         'Liquid Glass',
         'Is the best\neffect!!',
+        'Big text to show it,\nthis is a really\nreally big text to show it',
     ], []);
 
     const INTERVAL_MS = 2000; // Interval between text changes

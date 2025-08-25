@@ -14,10 +14,6 @@ export default function LiquidGlassContainer({ children, visual, measure, onMeas
 
     const [containerWidth, setContainerWidth] = useState(400); // Default width in pixels
     const [containerHeight, setContainerHeight] = useState(120); // Default height in pixels
-    const minWidth = 200;
-    const maxWidth = 800;
-    const minHeight = 60;
-    const maxHeight = 400;
 
     // Invisible text measurement result
     const [, setMeasuredSize] = useState({ width: 0, height: 0 });
@@ -59,8 +55,8 @@ export default function LiquidGlassContainer({ children, visual, measure, onMeas
             });
 
             if (autoSizeFromText) {
-                const targetW = Math.max(minWidth, Math.min(maxWidth, w));
-                const targetH = Math.max(minHeight, Math.min(maxHeight, h));
+                const targetW = w;
+                const targetH = h;
                 // Update only if different to avoid loops
                 setContainerWidth(prev => (prev !== targetW ? targetW : prev));
                 setContainerHeight(prev => (prev !== targetH ? targetH : prev));
@@ -174,7 +170,6 @@ export default function LiquidGlassContainer({ children, visual, measure, onMeas
                     display: 'inline-flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    padding: '1rem',
                     boxSizing: 'border-box'
                 }}>
                     {measure ?? children}
@@ -189,16 +184,18 @@ export default function LiquidGlassContainer({ children, visual, measure, onMeas
             className="relative inline-block liquid-stack"
             style={{
                 width: `${containerWidth}px`,
-                height: `${containerHeight}px`
+                height: `${containerHeight}px`,
+                transition: 'width 0.5s cubic-bezier(0.16, 1.5, 0.8, 1), height 0.6s cubic-bezier(0.20, 2.0, 0.50, 1)',
+                willChange: 'width, height'
             }}
         >
             <LiquidGlass
                 displacementScale={70}
-                blurAmount={0.1}
-                saturation={80}
-                aberrationIntensity={7.5}
+                blurAmount={0.05}
+                saturation={140}
+                aberrationIntensity={6}
                 elasticity={0.4}
-                cornerRadius={999}
+                cornerRadius={60}
                 mode="standard"
                 mouseContainer={containerRef}
                 globalMousePos={globalMousePos}
@@ -224,8 +221,8 @@ export default function LiquidGlassContainer({ children, visual, measure, onMeas
                     justifyContent: 'center',
                     padding: '0rem',
                     boxSizing: 'border-box',
-                    width: visualBoxSize ? `${visualBoxSize.width}px` : undefined,
-                    height: visualBoxSize ? `${visualBoxSize.height}px` : undefined
+                    width: visualBoxSize ? `calc(${visualBoxSize.width}px * 10)` : undefined,
+                    height: visualBoxSize ? `calc(${visualBoxSize.height}px * 10)` : undefined
                 }}>
                     {visual ?? children}
                 </div>
