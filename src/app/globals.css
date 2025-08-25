@@ -60,20 +60,52 @@
     display: inline-block;
 }
 
-.liquid-stack>* {
+/* Let direct children participate in normal flow; no forced absolute centering */
+.liquid-stack>*:not(.lg-measure) {
     position: absolute !important;
     top: 50% !important;
     left: 50% !important;
 }
 
+/* Force LiquidGlass core layers to fill the stack, independent of inner text size */
 .liquid-stack .glass {
-    position: relative !important;
+    position: absolute !important;
+    inset: 0 !important;
+    top: auto !important;
+    left: auto !important;
+    transform: none !important;
+    width: 100% !important;
+    height: 100% !important;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
     z-index: 2 !important;
 }
 
-.liquid-stack svg,
-.liquid-stack .glass__warp,
-.liquid-stack .glass,
+.liquid-stack .glass__warp {
+    position: absolute !important;
+    inset: 0 !important;
+}
+
+/* Ensure any internal SVG/filters scale with the container */
+.liquid-stack svg {
+    width: 100% !important;
+    height: 100% !important;
+}
+
 .liquid-stack .transition-all {
     pointer-events: all;
+}
+
+.liquid-stack>*:not(.glass):not(.glass__warp):not(svg):not(.lg-measure) {
+    transition: none !important;
+    -webkit-transition: none !important;
+}
+
+/* Ensure decorative outline layers size to the stack immediately */
+.liquid-stack>*:not(.glass):not(.glass__warp):not(svg):not(.lg-measure) {
+    width: 100% !important;
+    height: 100% !important;
+    box-sizing: border-box;
 }
