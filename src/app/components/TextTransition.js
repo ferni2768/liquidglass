@@ -6,8 +6,8 @@ import LiquidGlassContainer from './LiquidGlassContainer';
 export default function TextTransition() {
     const TEXTS = useMemo(() => [
         'Liquid Glass',
-        'Is the best\neffect!!',
-        'Big text to show it,\nthis is a really\nreally big text to show it',
+        'Is the best effect!!',
+        'Big text to show it, this is a really really big text to show it'
     ], []);
 
     const INTERVAL_MS = 2000; // Interval between text changes
@@ -20,6 +20,7 @@ export default function TextTransition() {
     const [visualText, setVisualText] = useState(TEXTS[0]);
     const [measureText, setMeasureText] = useState(TEXTS[0]);
     const [lastSize, setLastSize] = useState(null); // {width, height}
+    const pendingSizeRef = useRef(null); // Holds latest measured size to apply at swap
 
     const fadeTimeoutRef = useRef(null);
     const intervalRef = useRef(null);
@@ -48,6 +49,10 @@ export default function TextTransition() {
 
                 // After a full fade-out duration, swap visual text and fade in
                 fadeTimeoutRef.current = setTimeout(() => {
+                    // Apply the buffered measurement so the visual width updates exactly at swap
+                    if (pendingSizeRef.current) {
+                        setLastSize(pendingSizeRef.current);
+                    }
                     setVisualText(nextText);
                     setPhase('fadeIn');
 
@@ -80,19 +85,20 @@ export default function TextTransition() {
         transition: `opacity ${FADE_MS}ms ease`,
         willChange: 'opacity',
         opacity: phase === 'fadeOut' ? 0 : 1,
-        whiteSpace: 'pre-line',
+        whiteSpace: 'normal',
+        margin: 0,
     }), [phase]);
 
     // Measurement node always renders the next/target text so container can resize first
     const measureNode = (
-        <h1 className="text-white text-5xl font-bold" style={{ whiteSpace: 'pre-line' }}>
+        <h1 className="text-white text-5xl font-bold" style={{ whiteSpace: 'normal', margin: 0, display: 'inline-block', wordBreak: 'break-word', lineHeight: 1.2, transform: 'translateY(-0.06em)' }}>
             {measureText}
         </h1>
     );
 
     // Visual node renders the current text with fade effect
     const visualNode = (
-        <h1 className="text-white text-5xl font-bold" style={visualStyle}>
+        <h1 className="text-white text-5xl font-bold" style={{ ...visualStyle, display: 'inline-block', wordBreak: 'break-word', lineHeight: 1.2, transform: 'translateY(-0.06em)' }}>
             {visualText}
         </h1>
     );
@@ -102,10 +108,11 @@ export default function TextTransition() {
             visual={visualNode}
             measure={measureNode}
             visualBoxSize={lastSize}
+            phase={phase}
             onMeasure={(size) => {
-                // Only lock the new size after the fade-out has finished and we are about to fade-in
-                // Ensures the outgoing visual uses the previous size
-                if (phase === 'fadeIn' || phase === 'idle') {
+                // Buffer the latest measured size; apply immediately only when idle (for responsive resizes)
+                pendingSizeRef.current = size;
+                if (phase === 'idle') {
                     setLastSize(size);
                 }
             }}
