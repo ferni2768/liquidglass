@@ -263,7 +263,7 @@ export default function LiquidGlassContainer({ children, visual, measure, onMeas
                     boxSizing: 'border-box',
                     width: visualBoxSize ? `${visualBoxSize.width}px` : 'fit-content',
                     height: visualBoxSize ? `${visualBoxSize.height}px` : undefined,
-                    maxWidth: (() => {
+                    maxWidth: visualBoxSize ? undefined : (() => {
                         try {
                             const visualText = visual?.props?.children || children?.props?.children || '';
                             return getDynamicMaxWidth(visualText);
