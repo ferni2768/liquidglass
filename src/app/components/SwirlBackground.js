@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import { getViewport, listenViewport } from '../../lib/viewport';
 import { createNoise3D } from 'simplex-noise';
 
 const { PI, cos, sin, abs } = Math;
@@ -47,7 +48,7 @@ export default function SwirlBackground() {
         const noise3D = createNoise3D();
 
         function resizeAll() {
-            const w = innerWidth, h = innerHeight;
+            const { width: w, height: h } = getViewport();
             canvasA.width = w; canvasA.height = h;
             // Preserve content between buffers
             gA.drawImage(canvasB, 0, 0);
@@ -137,11 +138,11 @@ export default function SwirlBackground() {
         function boot() { resizeAll(); initAll(); tickFrame(); }
 
         const onResize = () => resizeAll();
-        window.addEventListener('resize', onResize);
+        const unsub = listenViewport(onResize);
         boot();
 
         return () => {
-            window.removeEventListener('resize', onResize);
+            unsub();
             if (frameRef.current) cancelAnimationFrame(frameRef.current);
         };
     }, []);

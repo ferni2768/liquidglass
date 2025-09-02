@@ -1,12 +1,14 @@
 'use client';
 
 import { useState, useEffect, useRef, useLayoutEffect } from 'react';
+import { getViewport, listenViewport } from '../../lib/viewport';
 import LiquidGlass from 'liquid-glass-react';
 
-export default function LiquidGlassContainer({ children, visual, measure, onMeasure, visualBoxSize, phase }) {
+export default function LiquidGlassContainer({ children, visual, measure, onMeasure, visualBoxSize, phase, balanced = true }) {
     const [isClient, setIsClient] = useState(false);
     const containerRef = useRef(null);
     const measureRef = useRef(null);
+    const [cornerRadius, setCornerRadius] = useState(120);
 
     // Mouse-driven positions to feed into LiquidGlass
     const [globalMousePos, setGlobalMousePos] = useState({ x: 0, y: 0 });
@@ -21,11 +23,11 @@ export default function LiquidGlassContainer({ children, visual, measure, onMeas
 
     useEffect(() => setIsClient(true), []);
 
-    // Compute a dynamic max width based on text length and screen size
+    // Compute a dynamic max width based on text length and screen size (dv units)
     const getDynamicMaxWidth = (text) => {
-        if (typeof window === 'undefined') return '80vw';
+        if (typeof window === 'undefined') return '80dvw';
         const length = text?.length || 0;
-        const vw = window.innerWidth;
+        const { width: vw } = getViewport();
 
         // Base maxWidth on text length and screen size for pleasing shapes
         let factor;
@@ -39,9 +41,24 @@ export default function LiquidGlassContainer({ children, visual, measure, onMeas
         else if (vw < 1024) factor = Math.min(factor, 0.8); // Tablet: cap at 80%
         else factor = Math.min(factor, 0.7); // Desktop: cap at 70%
 
-        const maxPx = Math.min(vw * factor, 1200);
-        return `${maxPx}px`;
+        // Express preferred width in dvw and cap by dvmin; allow up to 90vw as an absolute upper bound
+        const preferredPct = Math.round(factor * 100);
+        return `min(90vw, ${preferredPct}dvw, 120dvmin)`;
     };
+
+    // Corner radius derived from dvmin for consistent rounding across devices
+    useEffect(() => {
+        const updateCorner = () => {
+            if (typeof window === 'undefined') return;
+            const { dvmin } = getViewport();
+            const dvminPx = dvmin;
+            const r = Math.round(12 * dvminPx); // 12dvmin
+            setCornerRadius(Math.max(12, r));
+        };
+        updateCorner();
+        const unsub = listenViewport(updateCorner);
+        return () => unsub();
+    }, []);
 
     useLayoutEffect(() => {
         if (!isClient) return;
@@ -81,7 +98,7 @@ export default function LiquidGlassContainer({ children, visual, measure, onMeas
                 // If last line is significantly shorter than average (orphaned), try to rebalance
                 const shortThreshold = 0.4; // Last line should be at least 40% of average
 
-                if (lastLine.width < avgLineWidth * shortThreshold) {
+                if (balanced && lastLine.width < avgLineWidth * shortThreshold) {
                     // Try slightly narrower container to redistribute text
                     const currentMaxWidth = parseFloat(getComputedStyle(target).maxWidth);
                     const adjustedMaxWidth = currentMaxWidth * 0.85; // Reduce by 15%
@@ -124,7 +141,25 @@ export default function LiquidGlassContainer({ children, visual, measure, onMeas
             // Extract text content for dynamic maxWidth calculation
             const target = measureRef.current.querySelector('.lg-measure-inner') || measureRef.current;
             const textContent = target.textContent || '';
-            const dynamicMaxWidth = getDynamicMaxWidth(textContent);
+            const dynamicMaxWidth = balanced ? getDynamicMaxWidth(textContent) : 'min(90vw, 120dvmin)';
+
+            // Avoids wrap/drift caused by cascade differences or transforms
+            try {
+                const visualEl = containerRef.current?.querySelector('.lg-visual');
+                if (visualEl) {
+                    const vs = window.getComputedStyle(visualEl);
+                    const textProps = [
+                        'font-family', 'font-size', 'font-weight', 'font-style', 'letter-spacing', 'word-spacing',
+                        'text-transform', 'text-rendering', 'font-variant', 'white-space', 'word-break', 'line-height'
+                    ];
+                    for (const p of textProps) {
+                        try {
+                            const val = vs.getPropertyValue(p);
+                            if (val) target.style.setProperty(p, val, 'important');
+                        } catch { }
+                    }
+                }
+            } catch { }
 
             // Update maxWidth before measuring
             target.style.maxWidth = dynamicMaxWidth;
@@ -165,10 +200,21 @@ export default function LiquidGlassContainer({ children, visual, measure, onMeas
         if (measureRef.current) ro.observe(measureRef.current);
         window.addEventListener('resize', scheduleMeasure);
 
+        // If fonts load after initial render, text metrics can change; re-measure on readiness
+        if (document?.fonts) {
+            try {
+                document.fonts.ready.then(() => scheduleMeasure());
+                document.fonts.addEventListener?.('loadingdone', scheduleMeasure, { passive: true });
+            } catch { /* noop */ }
+        }
+
         return () => {
             if (rafId) cancelAnimationFrame(rafId);
             ro.disconnect();
             window.removeEventListener('resize', scheduleMeasure);
+            if (document?.fonts && document.fonts.removeEventListener) {
+                try { document.fonts.removeEventListener('loadingdone', scheduleMeasure); } catch { }
+            }
         };
     }, [measure, isClient, measuredDone, onMeasure, visualBoxSize, phase]);
 
@@ -223,13 +269,13 @@ export default function LiquidGlassContainer({ children, visual, measure, onMeas
         };
     }, []);
 
-    if (!isClient) return <div className="p-6 bg-white/10 backdrop-blur-sm rounded-3xl">{children}</div>;
+    if (!isClient) return <div className="p-[2dvmin] bg-white/10 backdrop-blur-sm rounded-[12dvmin]">{children}</div>;
 
     if (autoSizeFromText && !measuredDone) {
         return (
             <div aria-hidden ref={measureRef} style={{ position: 'fixed', top: '-100000px', left: '-100000px', opacity: 0, pointerEvents: 'none', visibility: 'hidden', whiteSpace: 'normal' }} className="lg-measure">
-                {/* Dynamic maxWidth based on text length and screen size */}
-                <div className="lg-measure-inner" style={{ display: 'inline-block', width: 'fit-content', maxWidth: 'min(90vw, 1100px)', textAlign: 'center', padding: '0.5rem 1rem', boxSizing: 'border-box' }}>
+                {/* Dynamic maxWidth based on text length and screen size (dv units) */}
+                <div className="lg-measure-inner" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 'fit-content', maxWidth: balanced ? 'min(90vw, 120dvmin)' : 'min(90vw, 120dvmin)', textAlign: 'center', padding: 'var(--lg-padding)', boxSizing: 'border-box' }}>
                     {measure ?? children}
                 </div>
             </div>
@@ -243,8 +289,8 @@ export default function LiquidGlassContainer({ children, visual, measure, onMeas
                 blurAmount={0.05}
                 saturation={140}
                 aberrationIntensity={6}
-                elasticity={0.4}
-                cornerRadius={60}
+                elasticity={0.3}
+                cornerRadius={cornerRadius}
                 mode="standard"
                 mouseContainer={containerRef}
                 globalMousePos={globalMousePos}
@@ -253,31 +299,25 @@ export default function LiquidGlassContainer({ children, visual, measure, onMeas
                 height={containerHeight}
                 style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
             >
-                {/* Visual box: use dynamic maxWidth based on visual text content */}
-                <div style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
+                {/* Visual box: force exact measured size to ensure identical wrapping */}
+                <div className="lg-visual" style={{
+                    display: 'inline-block',
                     textAlign: 'center',
-                    padding: '0.5rem 1rem',
+                    padding: 'var(--lg-padding)',
                     boxSizing: 'border-box',
-                    width: visualBoxSize ? `${visualBoxSize.width}px` : 'fit-content',
-                    height: visualBoxSize ? `${visualBoxSize.height}px` : undefined,
-                    maxWidth: visualBoxSize ? undefined : (() => {
-                        try {
-                            const visualText = visual?.props?.children || children?.props?.children || '';
-                            return getDynamicMaxWidth(visualText);
-                        } catch {
-                            return 'min(90vw, 1100px)';
-                        }
-                    })()
+                    minWidth: 0,
+                    width: visualBoxSize?.width ? `${visualBoxSize.width}px` : 'fit-content',
+                    height: visualBoxSize?.height ? `${visualBoxSize.height}px` : 'auto',
+                    maxWidth: visualBoxSize?.width ? `${visualBoxSize.width}px` : undefined,
+                    transform: 'none',
+                    position: 'relative',
                 }}>
                     {visual ?? children}
                 </div>
             </LiquidGlass>
 
             <div aria-hidden ref={measureRef} style={{ position: 'fixed', top: '-100000px', left: '-100000px', opacity: 0, pointerEvents: 'none', visibility: 'hidden', whiteSpace: 'normal' }} className="lg-measure">
-                <div className="lg-measure-inner" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 'fit-content', maxWidth: 'min(90vw, 1100px)', textAlign: 'center', padding: '0.5rem 1rem', boxSizing: 'border-box' }}>
+                <div className="lg-measure-inner" style={{ display: 'inline-block', whiteSpace: 'pre-line', alignItems: 'center', justifyContent: 'center', width: 'fit-content', maxWidth: balanced ? 'min(90vw, 120dvmin)' : 'min(90vw, 120dvmin)', textAlign: 'center', padding: 'var(--lg-padding)', boxSizing: 'border-box' }}>
                     {measure ?? children}
                 </div>
             </div>
