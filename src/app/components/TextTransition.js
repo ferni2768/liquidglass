@@ -4,13 +4,31 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import LiquidGlassContainer from './LiquidGlassContainer';
 
 export default function TextTransition() {
+    const [effectUnsupported, setEffectUnsupported] = useState(false);
+
+    useEffect(() => {
+        // Basic UA-based detection: Safari and Firefox have partial support for the
+        // SVG displacement / refraction effect used here.
+        if (typeof navigator === 'undefined') return;
+        const ua = navigator.userAgent || '';
+        const isFirefox = ua.includes('Firefox');
+        const isSafari = /Safari/.test(ua) && !/Chrome|Chromium|CriOS|OPR|Edg/.test(ua);
+        setEffectUnsupported(isFirefox || isSafari);
+    }, []);
+
     const TEXTS = useMemo(() => [
         {
             balanced: false,
             content: (
                 <>
                     <div className="font-extrabold mb-[0.75dvmin]" style={{ fontSize: '10dvmin', lineHeight: 1.02 }}>Liquid Glass</div>
-                    <div className="mb-[1.5dvmin]" style={{ fontSize: '5dvmin', lineHeight: 1.15 }}>Demo with my take on this effect</div>
+                    {effectUnsupported ? (
+                        <div className="font-bold mb-[1.5dvmin] underline" style={{ fontSize: '5dvmin', color: '#ea3323', lineHeight: 1.15 }}>
+                            This effect is NOT fully supported in your browser, try a different one
+                        </div>
+                    ) : (
+                        <div className="mb-[1.5dvmin]" style={{ fontSize: '5dvmin', lineHeight: 1.15 }}>Demo with my take on this effect</div>
+                    )}
                     <div className="font-extralight opacity-70" style={{ fontSize: '4dvmin', lineHeight: 1.1 }}>click anywhere to continue</div>
                 </>
             )
@@ -110,7 +128,7 @@ export default function TextTransition() {
                 </>
             )
         }
-    ], []);
+    ], [effectUnsupported]);
 
     const TRANSITION_SPEED = 2; // Speed multiplier for transitions
     const FADE_MS = Math.round(500 / TRANSITION_SPEED);
