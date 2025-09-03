@@ -3,7 +3,7 @@ import TextTransition from './components/TextTransition';
 
 export default function Home() {
   return (
-    <main className="flex items-center justify-center fixed inset-0 overflow-hidden" style={{ width: '100dvw', height: '100dvh' }}>
+    <main className="flex items-center justify-center fixed inset-0 overflow-hidden" style={{ width: '100dvw', height: '100dvh', backgroundColor: '#0a0811' }}>
       <SwirlBackground />
       <TextTransition />
     </main>

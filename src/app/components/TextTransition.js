@@ -127,6 +127,8 @@ export default function TextTransition() {
 
     const fadeTimeoutRef = useRef(null);
     const lastAdvanceRef = useRef(0);
+    const touchStartRef = useRef(0);
+    const mouseDownRef = useRef(0);
 
     // Kick off the automated switching
     useEffect(() => {
@@ -177,15 +179,46 @@ export default function TextTransition() {
             });
         };
 
-        const onClick = () => advance();
-        const onTouchEnd = () => advance();
+        // Treat both mouse clicks and touch taps only when the press duration is short
+        const MAX_PRESS_MS = 500;
 
-        window.addEventListener('click', onClick, { passive: true });
+        const onTouchStart = (e) => {
+            touchStartRef.current = Date.now();
+        };
+        const onTouchEnd = (e) => {
+            const start = touchStartRef.current || 0;
+            const dur = Date.now() - start;
+            touchStartRef.current = 0;
+            if (dur <= MAX_PRESS_MS) {
+                advance();
+            }
+        };
+
+        const onMouseDown = (e) => {
+            // Only track primary button
+            if (e.button !== 0) return;
+            mouseDownRef.current = Date.now();
+        };
+        const onMouseUp = (e) => {
+            if (e.button !== 0) return;
+            const start = mouseDownRef.current || 0;
+            const dur = Date.now() - start;
+            mouseDownRef.current = 0;
+            if (dur <= MAX_PRESS_MS) {
+                advance();
+            }
+        };
+
+        window.addEventListener('touchstart', onTouchStart, { passive: true });
         window.addEventListener('touchend', onTouchEnd, { passive: true });
+        window.addEventListener('mousedown', onMouseDown, { passive: true });
+        window.addEventListener('mouseup', onMouseUp, { passive: true });
 
         return () => {
-            window.removeEventListener('click', onClick);
+            window.removeEventListener('touchstart', onTouchStart);
             window.removeEventListener('touchend', onTouchEnd);
+            window.removeEventListener('mousedown', onMouseDown);
+            window.removeEventListener('mouseup', onMouseUp);
             if (fadeTimeoutRef.current) clearTimeout(fadeTimeoutRef.current);
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -202,14 +235,48 @@ export default function TextTransition() {
 
     // Measurement node always renders the next/target text so container can resize first
     const measureNode = (
-        <h1 className="text-white" style={{ whiteSpace: 'pre-line', margin: 0, display: 'inline-block', wordBreak: 'break-word', lineHeight: 1.12, transform: 'translateY(-0.06em)' }}>
+        <h1
+            className="text-white"
+            style={{
+                whiteSpace: 'pre-line',
+                margin: 0,
+                display: 'inline-block',
+                wordBreak: 'break-word',
+                lineHeight: 1.12,
+                transform: 'translateY(-0.06em)',
+                userSelect: 'none',
+                WebkitUserSelect: 'none',
+                MozUserSelect: 'none',
+                msUserSelect: 'none',
+                WebkitTouchCallout: 'none',
+                touchAction: 'manipulation',
+                cursor: 'default'
+            }}
+        >
             {typeof measureText === 'string' ? <span className="font-medium" style={{ whiteSpace: 'pre-line', fontSize: '7.5dvmin' }}>{measureText}</span> : measureText}
         </h1>
     );
 
     // Visual node renders the current text with fade effect
     const visualNode = (
-        <h1 className="text-white" style={{ ...visualStyle, whiteSpace: 'pre-line', display: 'inline-block', wordBreak: 'break-word', lineHeight: 1.12, transform: 'translateY(-0.06em)' }}>
+        <h1
+            className="text-white"
+            style={{
+                ...visualStyle,
+                whiteSpace: 'pre-line',
+                display: 'inline-block',
+                wordBreak: 'break-word',
+                lineHeight: 1.12,
+                transform: 'translateY(-0.06em)',
+                userSelect: 'none',
+                WebkitUserSelect: 'none',
+                MozUserSelect: 'none',
+                msUserSelect: 'none',
+                WebkitTouchCallout: 'none',
+                touchAction: 'manipulation',
+                cursor: 'default'
+            }}
+        >
             {typeof visualText === 'string' ? <span className="font-medium" style={{ whiteSpace: 'pre-line', fontSize: '7.5dvmin' }}>{visualText}</span> : visualText}
         </h1>
     );
