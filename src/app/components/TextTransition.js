@@ -4,25 +4,158 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import LiquidGlassContainer from './LiquidGlassContainer';
 
 export default function TextTransition() {
-    const TEXTS = useMemo(() => [
-        'Liquid Glass',
-        'Is the best\neffect!!',
-        'Big text to show it,\nthis is a really\nreally big text to show it',
-    ], []);
+    const [effectUnsupported, setEffectUnsupported] = useState(false);
 
-    const INTERVAL_MS = 2000; // Interval between text changes
+    useEffect(() => {
+        // Basic UA-based detection: Safari and Firefox have partial support for the
+        // SVG displacement / refraction effect used here.
+        if (typeof navigator === 'undefined') return;
+        const ua = navigator.userAgent || '';
+        const isFirefox = ua.includes('Firefox');
+        const isSafari = /Safari/.test(ua) && !/Chrome|Chromium|CriOS|OPR|Edg/.test(ua);
+        setEffectUnsupported(isFirefox || isSafari);
+    }, []);
+
+    const TEXTS = useMemo(() => [
+        {
+            balanced: false,
+            content: (
+                <>
+                    <div className="font-extrabold mb-[0.75dvmin]" style={{ fontSize: '10dvmin', lineHeight: 1.02 }}>Liquid Glass</div>
+                    {effectUnsupported ? (
+                        <div className="font-bold mb-[1.5dvmin] underline" style={{ fontSize: '5dvmin', color: '#ea3323', lineHeight: 1.15 }}>
+                            This effect is NOT fully supported in your browser, try a different one
+                        </div>
+                    ) : (
+                        <div className="mb-[1.5dvmin]" style={{ fontSize: '5dvmin', lineHeight: 1.15 }}>Demo with my take on this effect</div>
+                    )}
+                    <div className="font-extralight opacity-70" style={{ fontSize: '4dvmin', lineHeight: 1.1 }}>click anywhere to continue</div>
+                </>
+            )
+        },
+        {
+            content: (
+                <>
+                    <div className="font-semibold opacity-80 px-[1.25dvmin] mb-[1.5dvmin]" style={{ fontSize: '4dvmin', lineHeight: 1.05 }}>Apple introduced Liquid Glass in iOS 26</div>
+                    <div className="" style={{ fontSize: '8dvmin', lineHeight: 0.9 }}>It features 3 main effects:</div>
+                </>
+            )
+        },
+        {
+            balanced: false,
+            content: (
+                <>
+                    <div className="font-extrabold opacity-90 pulse-blur" style={{ fontSize: '10dvmin', lineHeight: 1.15 }}>
+                        BLUR
+                    </div>
+
+                    <div className="font-bold refraction" style={{ fontSize: '10dvmin', lineHeight: 1.15, color: 'white', position: 'relative', opacity: 0.85 }}>
+                        REFRACTION
+
+                        <svg style={{ position: "absolute", width: 0, height: 0 }}>
+                            <filter id="refractionFilter">
+                                <feTurbulence type="fractalNoise" baseFrequency="0.001 0.001" numOctaves="5" seed="2" result="turb">
+                                    <animate attributeName="baseFrequency" dur="15s" values="0.006 0.01; 0.009 0.014; 0.007 0.012; 0.010 0.016; 0.006 0.01" repeatCount="indefinite" />
+                                </feTurbulence>
+
+                                <feDisplacementMap in="SourceGraphic" in2="turb" scale="12" xChannelSelector="R" yChannelSelector="G" />
+                            </filter>
+                        </svg>
+                    </div>
+
+                    <div className="font-extrabold opacity-90" style={{ fontSize: '10dvmin', lineHeight: 1.15 }}>
+                        <div className="chromatic-aberration pb-[3dvmin]" data-text="ABERRATION">
+                            ABERRATION
+                        </div>
+                    </div>
+
+                    <div className="font-extralight opacity-70" style={{ fontSize: '4dvmin', lineHeight: 1.1 }}>Along with secondary effects...</div>
+                </>
+            )
+        },
+        {
+            balanced: false,
+            content: (
+                <>
+                    <div className="opacity-80" style={{ fontSize: '4dvmin', lineHeight: 1.05 }}>Also!</div>
+                    <div className="font-bold" style={{ fontSize: '6dvmin', lineHeight: 1.15 }}>This is elastic</div>
+                    <div className="font-light opacity-70" style={{ fontSize: '4dvmin', lineHeight: 1.1 }}>Hover to try</div>
+                </>
+            )
+        },
+        {
+            content: (
+                <>
+                    <div className="font-semibold" style={{ fontSize: '6dvmin', lineHeight: 1.08 }}>Animations are smooth</div>
+                    <div className="font-semibold mb-[20dvmin]" style={{ fontSize: '6dvmin', lineHeight: 1.08 }}>Being able to transform from this</div>
+                    <div className="font-extralight opacity-70" style={{ fontSize: '4dvmin', lineHeight: 1.1 }}>(looong text)</div>
+                </>
+            )
+        },
+        {
+            balanced: false,
+            content: (
+                <>
+                    <div className="font-semibold" style={{ fontSize: '6dvmin', lineHeight: 1.08 }}>To this</div>
+                    <div className="font-extralight opacity-70" style={{ fontSize: '4dvmin', lineHeight: 1.1 }}>(short text)</div>
+                </>
+            )
+        },
+        {
+            content: (
+                <>
+                    <div className="opacity-80" style={{ fontSize: '5dvmin', lineHeight: 1.05 }}>And...</div>
+                    <div className="font-bold mb-[1dvmin]" style={{ fontSize: '6dvmin', lineHeight: 1.15 }}>The app is entirely responsive</div>
+                    <div className="font-light opacity-70" style={{ fontSize: '4dvmin', lineHeight: 1.1 }}>Try resizing the window!</div>
+                </>
+            )
+        },
+        {
+            balanced: false,
+            content: (
+                <>
+                    <div className="font-semibold pt-[0.75dvmin]" style={{ fontSize: '5.5dvmin', lineHeight: 1.08 }}>Hope you found this interesting!</div>
+                    <div className="opacity-70">
+                        <a
+                            href="https://github.com/ferni2768/liquidglass"
+                            className="underline font-medium"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{ fontSize: '4.25dvmin', lineHeight: 1.08 }}
+                        >
+                            v1.0 by ferni2768 on GitHub
+                        </a>
+                    </div>
+                </>
+            )
+        },
+        {
+            balanced: false,
+            content: (
+                <>
+                    <div className="font-semibold" style={{ fontSize: '7dvmin', lineHeight: 1.08 }}>Let's start again...</div>
+                </>
+            )
+        }
+    ], [effectUnsupported]);
+
     const TRANSITION_SPEED = 2; // Speed multiplier for transitions
     const FADE_MS = Math.round(500 / TRANSITION_SPEED);
+    const CLICK_MIN_MS = 500; // Minimum delay between advances
 
     const [index, setIndex] = useState(0); // Text currently displayed
     const indexRef = useRef(index);
     const [phase, setPhase] = useState('idle'); // 'idle' | 'fadeOut' | 'fadeIn'
-    const [visualText, setVisualText] = useState(TEXTS[0]);
-    const [measureText, setMeasureText] = useState(TEXTS[0]);
+    const [visualText, setVisualText] = useState(TEXTS[0].content);
+    const [measureText, setMeasureText] = useState(TEXTS[0].content);
+    const [balanced, setBalanced] = useState(TEXTS[0].balanced !== undefined ? TEXTS[0].balanced : true);
     const [lastSize, setLastSize] = useState(null); // {width, height}
+    const pendingSizeRef = useRef(null); // Holds latest measured size to apply at swap
 
     const fadeTimeoutRef = useRef(null);
-    const intervalRef = useRef(null);
+    const lastAdvanceRef = useRef(0);
+    const touchStartRef = useRef(0);
+    const mouseDownRef = useRef(0);
 
     // Kick off the automated switching
     useEffect(() => {
@@ -30,13 +163,20 @@ export default function TextTransition() {
         indexRef.current = index;
     }, [index]);
 
+    // Click-to-advance (throttled)
     useEffect(() => {
         if (TEXTS.length < 2) return;
 
-        const doTick = () => {
+        const advance = () => {
+            // enforce min delay and avoid re-entrancy while animating
+            if (phase !== 'idle') return;
+            const now = Date.now();
+            if (now - lastAdvanceRef.current < CLICK_MIN_MS) return;
+            lastAdvanceRef.current = now;
+
             const current = indexRef.current;
             const nextIndex = (current + 1) % TEXTS.length;
-            const nextText = TEXTS[nextIndex];
+            const nextItem = TEXTS[nextIndex];
 
             // Visual starts fading out now
             setPhase('fadeOut');
@@ -44,11 +184,16 @@ export default function TextTransition() {
             // Align measure update to next frame to avoid flush-before-render glitches
             requestAnimationFrame(() => {
                 // Functional text (measure) switches to the next
-                setMeasureText(nextText);
+                setMeasureText(nextItem.content);
+                setBalanced(nextItem.balanced !== undefined ? nextItem.balanced : true);
 
                 // After a full fade-out duration, swap visual text and fade in
                 fadeTimeoutRef.current = setTimeout(() => {
-                    setVisualText(nextText);
+                    // Apply the buffered measurement so the visual width updates exactly at swap
+                    if (pendingSizeRef.current) {
+                        setLastSize(pendingSizeRef.current);
+                    }
+                    setVisualText(nextItem.content);
                     setPhase('fadeIn');
 
                     // After fade-in completes, set idle and advance index
@@ -61,39 +206,105 @@ export default function TextTransition() {
             });
         };
 
-        // Schedule recurring ticks every INTERVAL_MS
-        intervalRef.current = setInterval(doTick, INTERVAL_MS);
+        // Treat both mouse clicks and touch taps only when the press duration is short
+        const MAX_PRESS_MS = 500;
 
-        // Initial tick after one interval (keeps initial display shown for INTERVAL_MS)
-        const initialTimeout = setTimeout(doTick, INTERVAL_MS);
+        const onTouchStart = (e) => {
+            touchStartRef.current = Date.now();
+        };
+        const onTouchEnd = (e) => {
+            const start = touchStartRef.current || 0;
+            const dur = Date.now() - start;
+            touchStartRef.current = 0;
+            if (dur <= MAX_PRESS_MS) {
+                advance();
+            }
+        };
+
+        const onMouseDown = (e) => {
+            // Only track primary button
+            if (e.button !== 0) return;
+            mouseDownRef.current = Date.now();
+        };
+        const onMouseUp = (e) => {
+            if (e.button !== 0) return;
+            const start = mouseDownRef.current || 0;
+            const dur = Date.now() - start;
+            mouseDownRef.current = 0;
+            if (dur <= MAX_PRESS_MS) {
+                advance();
+            }
+        };
+
+        window.addEventListener('touchstart', onTouchStart, { passive: true });
+        window.addEventListener('touchend', onTouchEnd, { passive: true });
+        window.addEventListener('mousedown', onMouseDown, { passive: true });
+        window.addEventListener('mouseup', onMouseUp, { passive: true });
 
         return () => {
-            if (intervalRef.current) clearInterval(intervalRef.current);
+            window.removeEventListener('touchstart', onTouchStart);
+            window.removeEventListener('touchend', onTouchEnd);
+            window.removeEventListener('mousedown', onMouseDown);
+            window.removeEventListener('mouseup', onMouseUp);
             if (fadeTimeoutRef.current) clearTimeout(fadeTimeoutRef.current);
-            clearTimeout(initialTimeout);
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [TEXTS.length]);
+    }, [TEXTS.length, FADE_MS]);
 
     // Style for visual text fading
     const visualStyle = useMemo(() => ({
         transition: `opacity ${FADE_MS}ms ease`,
         willChange: 'opacity',
         opacity: phase === 'fadeOut' ? 0 : 1,
-        whiteSpace: 'pre-line',
+        whiteSpace: 'normal',
+        margin: 0,
     }), [phase]);
 
     // Measurement node always renders the next/target text so container can resize first
     const measureNode = (
-        <h1 className="text-white text-5xl font-bold" style={{ whiteSpace: 'pre-line' }}>
-            {measureText}
+        <h1
+            className="text-white"
+            style={{
+                whiteSpace: 'pre-line',
+                margin: 0,
+                display: 'inline-block',
+                wordBreak: 'break-word',
+                lineHeight: 1.12,
+                transform: 'translateY(-0.06em)',
+                userSelect: 'none',
+                WebkitUserSelect: 'none',
+                MozUserSelect: 'none',
+                msUserSelect: 'none',
+                WebkitTouchCallout: 'none',
+                touchAction: 'manipulation',
+                cursor: 'default'
+            }}
+        >
+            {typeof measureText === 'string' ? <span className="font-medium" style={{ whiteSpace: 'pre-line', fontSize: '7.5dvmin' }}>{measureText}</span> : measureText}
         </h1>
     );
 
     // Visual node renders the current text with fade effect
     const visualNode = (
-        <h1 className="text-white text-5xl font-bold" style={visualStyle}>
-            {visualText}
+        <h1
+            className="text-white"
+            style={{
+                ...visualStyle,
+                whiteSpace: 'pre-line',
+                display: 'inline-block',
+                wordBreak: 'break-word',
+                lineHeight: 1.12,
+                transform: 'translateY(-0.06em)',
+                userSelect: 'none',
+                WebkitUserSelect: 'none',
+                MozUserSelect: 'none',
+                msUserSelect: 'none',
+                WebkitTouchCallout: 'none',
+                touchAction: 'manipulation',
+                cursor: 'default'
+            }}
+        >
+            {typeof visualText === 'string' ? <span className="font-medium" style={{ whiteSpace: 'pre-line', fontSize: '7.5dvmin' }}>{visualText}</span> : visualText}
         </h1>
     );
 
@@ -102,10 +313,12 @@ export default function TextTransition() {
             visual={visualNode}
             measure={measureNode}
             visualBoxSize={lastSize}
+            phase={phase}
+            balanced={balanced}
             onMeasure={(size) => {
-                // Only lock the new size after the fade-out has finished and we are about to fade-in
-                // Ensures the outgoing visual uses the previous size
-                if (phase === 'fadeIn' || phase === 'idle') {
+                // Buffer the latest measured size; apply immediately only when idle (for responsive resizes)
+                pendingSizeRef.current = size;
+                if (phase === 'idle') {
                     setLastSize(size);
                 }
             }}

@@ -1,57 +1,47 @@
 @import "tailwindcss";
 
-/* Rainbow background animation */
-@keyframes rainbow {
-    0% {
-        background-color: #ff0000;
-    }
-
-    /* Red */
-    14.28% {
-        background-color: #ff8000;
-    }
-
-    /* Orange */
-    28.57% {
-        background-color: #ffff00;
-    }
-
-    /* Yellow */
-    42.86% {
-        background-color: #00ff00;
-    }
-
-    /* Green */
-    57.14% {
-        background-color: #0080ff;
-    }
-
-    /* Blue */
-    71.43% {
-        background-color: #8000ff;
-    }
-
-    /* Indigo */
-    85.71% {
-        background-color: #ff0080;
-    }
-
-    /* Violet */
-    100% {
-        background-color: #ff0000;
-    }
+html,
+body {
+    width: 100%;
+    height: 100%;
 }
 
-.rainbow-bg {
-    animation: rainbow 30s linear infinite;
-    min-height: 100vh;
+:root {
+    /* Standard padding for LiquidGlass inner boxes */
+    --lg-padding: 3dvmin 3dvmin;
 }
 
-/* Floating squares animation optimizations */
-.floating-square {
-    will-change: transform, top;
-    backface-visibility: hidden;
-    transform-style: preserve-3d;
+/* dv-based utility helpers */
+.text-dv-3xl {
+    font-size: 3dvmin;
+}
+
+.text-dv-4xl {
+    font-size: 4dvmin;
+}
+
+.text-dv-2xl {
+    font-size: 2.4dvmin;
+}
+
+.text-dv-xl {
+    font-size: 2.2dvmin;
+}
+
+.text-dv-lg {
+    font-size: 2dvmin;
+}
+
+.text-dv-sm {
+    font-size: 1.6dvmin;
+}
+
+.rounded-dv {
+    border-radius: 12dvmin;
+}
+
+.p-dv {
+    padding: 1dvmin 2dvmin;
 }
 
 /* Liquid stack: force children to overlap and be absolutely centered */
@@ -61,7 +51,7 @@
 }
 
 /* Let direct children participate in normal flow; no forced absolute centering */
-.liquid-stack>*:not(.lg-measure) {
+.liquid-stack>*:not(.lg-measure):not(.lg-visual) {
     position: absolute !important;
     top: 50% !important;
     left: 50% !important;
@@ -98,14 +88,152 @@
     pointer-events: all;
 }
 
-.liquid-stack>*:not(.glass):not(.glass__warp):not(svg):not(.lg-measure) {
+.liquid-stack>*:not(.glass):not(.glass__warp):not(svg):not(.lg-measure):not(.lg-visual) {
     transition: none !important;
     -webkit-transition: none !important;
 }
 
 /* Ensure decorative outline layers size to the stack immediately */
-.liquid-stack>*:not(.glass):not(.glass__warp):not(svg):not(.lg-measure) {
+.liquid-stack>*:not(.glass):not(.glass__warp):not(svg):not(.lg-measure):not(.lg-visual) {
     width: 100% !important;
     height: 100% !important;
     box-sizing: border-box;
+}
+
+/* Ensure measurement and visual nodes use identical text layout behavior */
+.lg-measure-inner,
+.lg-visual {
+    white-space: pre-line;
+    display: inline-block;
+    word-break: break-word;
+    line-height: 1.12;
+    text-align: center;
+}
+
+/* Gentle pulsing blur used for the BLUR sample */
+@keyframes pulseBlur {
+    from {
+        filter: blur(0.6dvmin);
+    }
+
+    to {
+        filter: blur(0.3dvmin);
+    }
+}
+
+.pulse-blur {
+    /* Initial gentle blur and an ongoing alternate pulse */
+    filter: blur(0.6dvmin);
+    animation: pulseBlur 2s ease-in-out infinite alternate;
+}
+
+/* Chromatic aberration layers: main text plus two colored pseudo-elements */
+.chromatic-aberration {
+    position: relative;
+    display: inline-block;
+    color: white;
+    -webkit-font-smoothing: antialiased;
+}
+
+.chromatic-aberration::before,
+.chromatic-aberration::after {
+    content: attr(data-text);
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    mix-blend-mode: screen;
+    transform-origin: center;
+    display: inline-block;
+}
+
+/* Stronger color layers with a very subtle constant blur */
+.chromatic-aberration::before {
+    color: rgba(255, 60, 60, 0.98);
+    filter: blur(0.08dvmin);
+}
+
+.chromatic-aberration::after {
+    color: rgba(80, 200, 255, 0.98);
+    filter: blur(0.08dvmin);
+}
+
+@keyframes chromaPulsePos {
+    0% {
+        transform: translate3d(0.425dvmin, 0.025dvmin, 0) rotate(0deg);
+        opacity: 1;
+    }
+
+    100% {
+        transform: translate3d(0.85dvmin, 0.05dvmin, 0) rotate(0.01deg);
+        opacity: 1;
+    }
+}
+
+@keyframes chromaPulseNeg {
+    0% {
+        transform: translate3d(-0.425dvmin, -0.025dvmin, 0) rotate(0deg);
+        opacity: 1;
+    }
+
+    100% {
+        transform: translate3d(-0.85dvmin, -0.05dvmin, 0) rotate(-0.01deg);
+        opacity: 1;
+    }
+}
+
+/* Animate pseudo-elements (snappier, slightly faster pulse) */
+.chromatic-aberration::before {
+    animation: chromaPulsePos 3.2s ease-in-out infinite alternate;
+}
+
+.chromatic-aberration::after {
+    animation: chromaPulseNeg 3.2s ease-in-out infinite alternate;
+}
+
+/* Refraction helper: apply SVG filter by id to the element */
+.refraction {
+    filter: url(#refractionFilter);
+}
+
+/* Ensure the tiny SVG used to host the filter stays zero-sized and positioned */
+.refraction svg {
+    position: absolute !important;
+    width: 0 !important;
+    height: 0 !important;
+    overflow: hidden !important;
+}
+
+/* Optimization hints for frequently animated/transforming nodes */
+.lg-perf-hint,
+.lg-visual,
+.lg-visual-wrap,
+.lg-measure-inner,
+.liquid-stack svg,
+.liquid-stack .glass__warp,
+.chromatic-aberration,
+.chromatic-aberration::before,
+.chromatic-aberration::after,
+.pulse-blur {
+    will-change: transform, opacity, filter, backdrop-filter;
+    transform-origin: center center;
+    -webkit-transform-origin: center center;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    transform-style: preserve-3d;
+    -webkit-transform: translate3d(0, 0, 0);
+    transform: translate3d(0, 0, 0);
+}
+
+/* Glass effect container optimizations*/
+.liquid-stack .glass {
+    transform-origin: center center;
+    -webkit-transform-origin: center center;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    transform-style: preserve-3d;
+    -webkit-transform: translate3d(0, 0, 0);
+    transform: translate3d(0, 0, 0);
 }
