@@ -102,10 +102,19 @@ export default function TextTransition() {
             )
         },
         {
+            content: (
+                <>
+                    <div className="opacity-80" style={{ fontSize: '5dvmin', lineHeight: 1.05 }}>And...</div>
+                    <div className="font-bold mb-[1dvmin]" style={{ fontSize: '6dvmin', lineHeight: 1.15 }}>The app is entirely responsive</div>
+                    <div className="font-light opacity-70" style={{ fontSize: '4dvmin', lineHeight: 1.1 }}>Try resizing the window!</div>
+                </>
+            )
+        },
+        {
             balanced: false,
             content: (
                 <>
-                    <div className="font-semibold" style={{ fontSize: '5.5dvmin', lineHeight: 1.08 }}>Hope you found this interesting!</div>
+                    <div className="font-semibold pt-[0.75dvmin]" style={{ fontSize: '5.5dvmin', lineHeight: 1.08 }}>Hope you found this interesting!</div>
                     <div className="opacity-70">
                         <a
                             href="https://github.com/ferni2768/liquidglass"
