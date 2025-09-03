@@ -216,6 +216,7 @@ export default function LiquidGlassContainer({ children, visual, measure, onMeas
                 try { document.fonts.removeEventListener('loadingdone', scheduleMeasure); } catch { }
             }
         };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [measure, isClient, measuredDone, onMeasure, visualBoxSize, phase]);
 
     // Track whether the pointer (mouse or active touch) is considered "inside" the window
@@ -317,6 +318,7 @@ export default function LiquidGlassContainer({ children, visual, measure, onMeas
             cancelAnimationFrame(animRef.current.rafId);
             animRef.current.rafId = null;
         }
+        const localAnim = animRef.current;
 
         // If pointer became active, snap elasticity back to default and stop animating
         if (pointerActive) {
@@ -381,11 +383,13 @@ export default function LiquidGlassContainer({ children, visual, measure, onMeas
         animRef.current.rafId = requestAnimationFrame(step);
 
         return () => {
-            if (animRef.current.rafId) {
-                cancelAnimationFrame(animRef.current.rafId);
-                animRef.current.rafId = null;
+            if (localAnim && localAnim.rafId) {
+                cancelAnimationFrame(localAnim.rafId);
+                // Clear the copied object's rafId
+                try { localAnim.rafId = null; } catch { }
             }
         };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [pointerActive]);
 
     if (!isClient) return <div className="p-[2dvmin] bg-white/10 backdrop-blur-sm rounded-[12dvmin]">{children}</div>;
