@@ -133,7 +133,7 @@ export default function TextTransition() {
             balanced: false,
             content: (
                 <>
-                    <div className="font-semibold" style={{ fontSize: '7dvmin', lineHeight: 1.08 }}>Let's start again...</div>
+                    <div className="font-semibold" style={{ fontSize: '7dvmin', lineHeight: 1.08 }}>Let&apos;s start again...</div>
                 </>
             )
         }
@@ -258,6 +258,7 @@ export default function TextTransition() {
         opacity: phase === 'fadeOut' ? 0 : 1,
         whiteSpace: 'normal',
         margin: 0,
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }), [phase]);
 
     // Measurement node always renders the next/target text so container can resize first
