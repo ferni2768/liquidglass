@@ -44,11 +44,6 @@ body {
     padding: 1dvmin 2dvmin;
 }
 
-
-
-/* Floating squares animation optimizations */
-
-
 /* Liquid stack: force children to overlap and be absolutely centered */
 .liquid-stack {
     position: relative;
@@ -209,4 +204,36 @@ body {
     width: 0 !important;
     height: 0 !important;
     overflow: hidden !important;
+}
+
+/* Optimization hints for frequently animated/transforming nodes */
+.lg-perf-hint,
+.lg-visual,
+.lg-visual-wrap,
+.lg-measure-inner,
+.liquid-stack svg,
+.liquid-stack .glass__warp,
+.chromatic-aberration,
+.chromatic-aberration::before,
+.chromatic-aberration::after,
+.pulse-blur {
+    will-change: transform, opacity, filter, backdrop-filter;
+    transform-origin: center center;
+    -webkit-transform-origin: center center;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    transform-style: preserve-3d;
+    -webkit-transform: translate3d(0, 0, 0);
+    transform: translate3d(0, 0, 0);
+}
+
+/* Glass effect container optimizations*/
+.liquid-stack .glass {
+    transform-origin: center center;
+    -webkit-transform-origin: center center;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    transform-style: preserve-3d;
+    -webkit-transform: translate3d(0, 0, 0);
+    transform: translate3d(0, 0, 0);
 }

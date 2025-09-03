@@ -123,7 +123,7 @@ export default function TextTransition() {
                             rel="noopener noreferrer"
                             style={{ fontSize: '4.25dvmin', lineHeight: 1.08 }}
                         >
-                            Here is my code
+                            v1.0 by ferni2768 on GitHub
                         </a>
                     </div>
                 </>
